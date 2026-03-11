@@ -128,7 +128,7 @@ router.get('/', controller.readAll);
  *           schema:
  *             $ref: '#/components/schemas/UsuarioCreateUpdate'
  *     responses:
- *       201:
+ *       200:
  *         description: Actualizado
  *       404:
  *         description: No encontrado

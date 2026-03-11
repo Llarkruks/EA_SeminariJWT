@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import mongoose from 'mongoose';
 import OrganizacionService from '../services/Organizacion';
 
 const createOrganizacion = async (req: Request, res: Response, next: NextFunction) => {
@@ -14,7 +13,9 @@ const createOrganizacion = async (req: Request, res: Response, next: NextFunctio
 const readOrganizacion = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const organizacion = await OrganizacionService.getOrganizacion(req.params.organizacionId);
-        return organizacion ? res.status(200).json(organizacion) : res.status(404).json({ message: 'not found' });
+        return organizacion
+            ? res.status(200).json(organizacion)
+            : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -34,7 +35,9 @@ const updateOrganizacion = async (req: Request, res: Response, next: NextFunctio
 
     try {
         const organizacion = await OrganizacionService.updateOrganizacion(organizacionId, req.body);
-        return organizacion ? res.status(200).json(organizacion) : res.status(404).json({ message: 'not found' });
+        return organizacion
+            ? res.status(200).json(organizacion)
+            : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -45,10 +48,35 @@ const deleteOrganizacion = async (req: Request, res: Response, next: NextFunctio
 
     try {
         const organizacion = await OrganizacionService.deleteOrganizacion(organizacionId);
-        return organizacion ? res.status(201).json(organizacion) : res.status(404).json({ message: 'not found' });
+        return organizacion
+            ? res.status(200).json(organizacion)
+            : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
 };
 
-export default { createOrganizacion, readOrganizacion, readAll, updateOrganizacion, deleteOrganizacion };
+const readUsuariosByOrganizacion = async (req: Request, res: Response, next: NextFunction) => {
+    const organizacionId = req.params.organizacionId;
+
+    try {
+        const organizacion = await OrganizacionService.getUsuariosByOrganizacion(organizacionId);
+
+        if (!organizacion) {
+            return res.status(404).json({ message: 'not found' });
+        }
+
+        return res.status(200).json(organizacion.usuarios);
+    } catch (error) {
+        return res.status(500).json({ error });
+    }
+};
+
+export default {
+    createOrganizacion,
+    readOrganizacion,
+    readAll,
+    updateOrganizacion,
+    deleteOrganizacion,
+    readUsuariosByOrganizacion
+};
