@@ -1,0 +1,56 @@
+<div>
+  <h2>Recurso protegido por rol</h2>
+
+  <div *ngIf="!isAdmin" class="alert" style="margin-top: 10px;">
+    No tienes permisos de administrador para acceder a este recurso.
+  </div>
+
+  <div *ngIf="isAdmin">
+    <p>Este panel solo está disponible para usuarios con rol <strong>admin</strong>.</p>
+
+    <div style="margin: 20px 0;">
+      <h3>Crear organización</h3>
+
+      <input
+        type="text"
+        [(ngModel)]="nuevaOrganizacion"
+        placeholder="Nombre de la organización"
+        style="padding: 8px; min-width: 260px; margin-right: 10px;"
+      />
+
+      <button class="btn" (click)="crearOrganizacion()" [disabled]="creandoOrganizacion">
+        <span *ngIf="creandoOrganizacion">Creando...</span>
+        <span *ngIf="!creandoOrganizacion">Crear organización</span>
+      </button>
+
+      <div *ngIf="successOrganizacion" class="success" style="margin-top: 10px;">
+        {{ successOrganizacion }}
+      </div>
+
+      <div *ngIf="errorOrganizacion" class="alert" style="margin-top: 10px;">
+        {{ errorOrganizacion }}
+      </div>
+    </div>
+
+    <div style="margin: 20px 0;">
+      <h3>Lista de usuarios</h3>
+
+      <button class="btn" (click)="cargarUsuarios()" [disabled]="loadingUsuarios">
+        <span *ngIf="loadingUsuarios">Cargando...</span>
+        <span *ngIf="!loadingUsuarios">Cargar usuarios</span>
+      </button>
+
+      <div *ngIf="errorUsuarios" class="alert" style="margin-top: 10px;">
+        {{ errorUsuarios }}
+      </div>
+
+      <ul *ngIf="usuarios.length > 0" class="list" style="margin-top: 15px;">
+        <li *ngFor="let u of usuarios" class="card" style="flex-direction: row; justify-content: start; gap: 10px;">
+          <span class="name">{{ u.name }}</span>
+          <span class="muted">{{ u.email }}</span>
+          <span class="muted">Rol: {{ u.rol }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

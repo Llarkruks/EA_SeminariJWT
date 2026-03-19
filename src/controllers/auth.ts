@@ -12,7 +12,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     try {
         const usuario = await authService.validateUserCredentials(email, password);
-        
+
         if (!usuario) {
             return res.status(401).json({ message: 'Credenciales incorrectas' });
         }
@@ -28,7 +28,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
                 _id: usuario._id,
                 name: usuario.name,
                 email: usuario.email,
-                organizacion: usuario.organizacion
+                organizacion: usuario.organizacion,
+                rol: usuario.rol
             }
         });
     } catch (error) {
@@ -81,9 +82,11 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
 export const getMe = async (req: AuthRequest, res: Response) => {
     try {
         const usuario = await Usuario.findById(req.user?.id).populate('organizacion');
+
         if (!usuario) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
+
         return res.status(200).json(usuario);
     } catch (error) {
         return res.status(500).json({ error });

@@ -1,33 +1,56 @@
-import mongoose from 'mongoose';
-import Usuario, { IUsuarioModel, IUsuario } from '../models/Usuario';
+import Usuario, { IUsuario } from '../models/Usuario';
 
-const createUsuario = async (data: Partial<IUsuario>): Promise<IUsuarioModel> => {
-    const usuario = new Usuario({
-        _id: new mongoose.Types.ObjectId(),
-        ...data
-    });
+const createUsuario = async (data: IUsuario) => {
+    const usuario = new Usuario(data);
     return await usuario.save();
 };
 
-const getUsuario = async (usuarioId: string): Promise<IUsuarioModel | null> => {
-    return await Usuario.findById(usuarioId).populate('organizacion');
+const getUsuario = async (id: string) => {
+    return await Usuario.findById(id).populate('organizacion');
 };
 
-const getAllUsuarios = async (): Promise<IUsuarioModel[]> => {
+const getAllUsuarios = async () => {
     return await Usuario.find().populate('organizacion');
 };
 
-const updateUsuario = async (usuarioId: string, data: Partial<IUsuario>): Promise<IUsuarioModel | null> => {
-    const usuario = await Usuario.findById(usuarioId);
-    if (usuario) {
-        usuario.set(data);
-        return await usuario.save();
+const updateUsuario = async (id: string, data: Partial<IUsuario>) => {
+    const usuario = await Usuario.findById(id);
+
+    if (!usuario) {
+        return null;
     }
-    return null;
+
+    if (data.name !== undefined) {
+        usuario.name = data.name;
+    }
+
+    if (data.email !== undefined) {
+        usuario.email = data.email;
+    }
+
+    if (data.password !== undefined) {
+        usuario.password = data.password;
+    }
+
+    if (data.organizacion !== undefined) {
+        usuario.organizacion = data.organizacion;
+    }
+
+    if (data.rol !== undefined) {
+        usuario.rol = data.rol;
+    }
+
+    return await usuario.save();
 };
 
-const deleteUsuario = async (usuarioId: string): Promise<IUsuarioModel | null> => {
-    return await Usuario.findByIdAndDelete(usuarioId);
+const deleteUsuario = async (id: string) => {
+    return await Usuario.findByIdAndDelete(id);
 };
 
-export default { createUsuario, getUsuario, getAllUsuarios, updateUsuario, deleteUsuario };
+export default {
+    createUsuario,
+    getUsuario,
+    getAllUsuarios,
+    updateUsuario,
+    deleteUsuario
+};

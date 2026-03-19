@@ -1,12 +1,14 @@
 import mongoose, { Document, Schema } from 'mongoose';
-
 import bcrypt from 'bcryptjs';
+
+export type UserRole = 'admin' | 'user';
 
 export interface IUsuario {
     name: string;
     email: string;
     password: string;
     organizacion: mongoose.Types.ObjectId | string;
+    rol: UserRole;
 }
 
 export interface IUsuarioModel extends IUsuario, Document {}
@@ -16,7 +18,13 @@ const UsuarioSchema: Schema = new Schema(
         name: { type: String, required: true },
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
-        organizacion: { type: Schema.Types.ObjectId, required: true, ref: 'Organizacion' }
+        organizacion: { type: Schema.Types.ObjectId, required: true, ref: 'Organizacion' },
+        rol: {
+            type: String,
+            enum: ['admin', 'user'],
+            default: 'user',
+            required: true
+        }
     },
     {
         timestamps: true,

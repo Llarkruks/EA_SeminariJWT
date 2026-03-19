@@ -1,12 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
-import mongoose from 'mongoose';
 import UsuarioService from '../services/Usuario';
 import { AuthRequest } from '../middleware/auth';
 
 const createUsuario = async (req: Request, res: Response, next: NextFunction) => {
-   
     try {
-        const savedUsuario = await UsuarioService.createUsuario(req.body);
+        const payload = {
+            ...req.body,
+            rol: 'user'
+        };
+
+        const savedUsuario = await UsuarioService.createUsuario(payload);
         return res.status(201).json(savedUsuario);
     } catch (error: any) {
         if (error.code === 11000) {
@@ -16,7 +19,7 @@ const createUsuario = async (req: Request, res: Response, next: NextFunction) =>
     }
 };
 
-const readUsuario = async (req: Request, res: Response, next: NextFunction) => {
+const readUsuario = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const usuarioId = req.params.usuarioId;
 
     try {
@@ -39,27 +42,23 @@ const readAll = async (req: Request, res: Response, next: NextFunction) => {
 const updateUsuario = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const usuarioId = req.params.usuarioId;
 
-    // Protección de recurso: solo puedes actualizarte a ti mismo
-    if (req.user?.id !== usuarioId) {
-        return res.status(403).json({ message: 'No tienes permiso para actualizar a otro usuario' });
-    }
-
     try {
-        const updatedUsuario = await UsuarioService.updateUsuario(usuarioId, req.body);
+        const updateData: any = { ...req.body };
+
+        if (req.user?.rol !== 'admin') {
+            delete updateData.rol;
+            delete updateData.organizacion;
+        }
+
+        const updatedUsuario = await UsuarioService.updateUsuario(usuarioId, updateData);
         return updatedUsuario ? res.status(201).json(updatedUsuario) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
 };
 
-
 const deleteUsuario = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const usuarioId = req.params.usuarioId;
-
-    // Protección de recurso: solo puedes borrarte a ti mismo
-    if (req.user?.id !== usuarioId) {
-        return res.status(403).json({ message: 'No tienes permiso para borrar a otro usuario' });
-    }
 
     try {
         const usuario = await UsuarioService.deleteUsuario(usuarioId);

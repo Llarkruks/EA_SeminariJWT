@@ -1,6 +1,7 @@
 import express from 'express';
 import controller from '../controllers/Organizacion';
 import { Schemas, ValidateJoi } from '../middleware/Joi';
+import { authenticateToken, authorizeRoles } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -42,8 +43,10 @@ const router = express.Router();
  * @openapi
  * /organizaciones:
  *   post:
- *     summary: Crea una organización
+ *     summary: Crea una organización (solo admin)
  *     tags: [Organizaciones]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -53,10 +56,18 @@ const router = express.Router();
  *     responses:
  *       201:
  *         description: Creado
+ *       403:
+ *         description: Solo administradores
  *       422:
  *         description: Validación fallida (Joi)
  */
-router.post('/', ValidateJoi(Schemas.organizacion.create), controller.createOrganizacion);
+router.post(
+    '/',
+    authenticateToken,
+    authorizeRoles('admin'),
+    ValidateJoi(Schemas.organizacion.create),
+    controller.createOrganizacion
+);
 
 /**
  * @openapi
@@ -64,6 +75,8 @@ router.post('/', ValidateJoi(Schemas.organizacion.create), controller.createOrga
  *   get:
  *     summary: Obtiene una organización por ID
  *     tags: [Organizaciones]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: organizacionId
@@ -81,14 +94,16 @@ router.post('/', ValidateJoi(Schemas.organizacion.create), controller.createOrga
  *       404:
  *         description: No encontrado
  */
-router.get('/:organizacionId', controller.readOrganizacion);
+router.get('/:organizacionId', authenticateToken, controller.readOrganizacion);
 
 /**
  * @openapi
  * /organizaciones:
  *   get:
- *     summary: Lista todas las organizaciones
+ *     summary: Lista organizaciones
  *     tags: [Organizaciones]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: OK
@@ -99,14 +114,16 @@ router.get('/:organizacionId', controller.readOrganizacion);
  *               items:
  *                 $ref: '#/components/schemas/Organizacion'
  */
-router.get('/', controller.readAll);
+router.get('/', authenticateToken, controller.readAll);
 
 /**
  * @openapi
  * /organizaciones/{organizacionId}:
  *   put:
- *     summary: Actualiza una organización por ID
+ *     summary: Actualiza una organización por ID (solo admin)
  *     tags: [Organizaciones]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: organizacionId
@@ -123,23 +140,29 @@ router.get('/', controller.readAll);
  *     responses:
  *       200:
  *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Organizacion'
+ *       403:
+ *         description: Solo administradores
  *       404:
  *         description: No encontrado
  *       422:
  *         description: Validación fallida (Joi)
  */
-router.put('/:organizacionId', ValidateJoi(Schemas.organizacion.update), controller.updateOrganizacion);
+router.put(
+    '/:organizacionId',
+    authenticateToken,
+    authorizeRoles('admin'),
+    ValidateJoi(Schemas.organizacion.update),
+    controller.updateOrganizacion
+);
 
 /**
  * @openapi
  * /organizaciones/{organizacionId}:
  *   delete:
- *     summary: Elimina una organización por ID
+ *     summary: Elimina una organización por ID (solo admin)
  *     tags: [Organizaciones]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: organizacionId
@@ -150,9 +173,11 @@ router.put('/:organizacionId', ValidateJoi(Schemas.organizacion.update), control
  *     responses:
  *       200:
  *         description: Eliminado correctamente
+ *       403:
+ *         description: Solo administradores
  *       404:
  *         description: No encontrado
  */
-router.delete('/:organizacionId', controller.deleteOrganizacion);
+router.delete('/:organizacionId', authenticateToken, authorizeRoles('admin'), controller.deleteOrganizacion);
 
 export default router;

@@ -43,7 +43,6 @@ const StartServer = () => {
     router.use(express.json());
     router.use(cookieParser());
 
-    /** Rules of our API */
     router.use(
         cors({
             origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
@@ -51,18 +50,14 @@ const StartServer = () => {
         })
     );
 
-    /** Swagger */
     router.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-    /** Routes */
     router.use('/auth', authRoutes);
     router.use('/organizaciones', organizacionRoutes);
     router.use('/usuarios', usuarioRoutes);
 
-    /** Healthcheck */
     router.get('/ping', (req, res, next) => res.status(200).json({ hello: 'world' }));
 
-    /** Error handling */
     router.use((req, res, next) => {
         const error = new Error('Not found');
 

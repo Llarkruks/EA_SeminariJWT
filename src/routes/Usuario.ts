@@ -1,8 +1,7 @@
 import express from 'express';
 import controller from '../controllers/Usuario';
 import { Schemas, ValidateJoi } from '../middleware/Joi';
-
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, authorizeRoles, authorizeSelfOrAdmin } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -34,7 +33,11 @@ const router = express.Router();
  *           type: string
  *           description: ObjectId de la organización
  *           example: "65f1c2a1b2c3d4e5f6789013"
- *     UsuarioCreateUpdate:
+ *         rol:
+ *           type: string
+ *           enum: [admin, user]
+ *           example: "user"
+ *     UsuarioCreate:
  *       type: object
  *       required:
  *         - name
@@ -55,6 +58,26 @@ const router = express.Router();
  *           type: string
  *           description: ObjectId de la organización (24 hex)
  *           example: "65f1c2a1b2c3d4e5f6789013"
+ *     UsuarioUpdate:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: "Judit Actualizada"
+ *         email:
+ *           type: string
+ *           example: "judit@gmail.com"
+ *         password:
+ *           type: string
+ *           example: "newpassword123"
+ *         organizacion:
+ *           type: string
+ *           description: ObjectId de la organización (24 hex)
+ *           example: "65f1c2a1b2c3d4e5f6789013"
+ *         rol:
+ *           type: string
+ *           enum: [admin, user]
+ *           example: "admin"
  */
 
 /**
@@ -68,10 +91,12 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UsuarioCreateUpdate'
+ *             $ref: '#/components/schemas/UsuarioCreate'
  *     responses:
  *       201:
  *         description: Creado
+ *       409:
+ *         description: El email ya está registrado
  *       422:
  *         description: Validación fallida (Joi)
  */
@@ -95,30 +120,34 @@ router.post('/', ValidateJoi(Schemas.usuario.create), controller.createUsuario);
  *     responses:
  *       200:
  *         description: OK
+ *       403:
+ *         description: No autorizado para ver ese usuario
  *       404:
  *         description: No encontrado
  */
-router.get('/:usuarioId',authenticateToken ,controller.readUsuario);
+router.get('/:usuarioId', authenticateToken, authorizeSelfOrAdmin, controller.readUsuario);
 
 /**
  * @openapi
  * /usuarios:
  *   get:
- *     summary: Lista todos los usuarios
+ *     summary: Lista todos los usuarios (solo admin)
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: OK
+ *       403:
+ *         description: Solo administradores
  */
-router.get('/',authenticateToken, controller.readAll);
+router.get('/', authenticateToken, authorizeRoles('admin'), controller.readAll);
 
 /**
  * @openapi
  * /usuarios/{usuarioId}:
  *   put:
- *     summary: Actualiza un usuario por ID
+ *     summary: Actualiza un usuario por ID (self o admin)
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -134,22 +163,30 @@ router.get('/',authenticateToken, controller.readAll);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UsuarioCreateUpdate'
+ *             $ref: '#/components/schemas/UsuarioUpdate'
  *     responses:
  *       201:
  *         description: Actualizado
+ *       403:
+ *         description: No autorizado
  *       404:
  *         description: No encontrado
  *       422:
  *         description: Validación fallida (Joi)
  */
-router.put('/:usuarioId',authenticateToken, ValidateJoi(Schemas.usuario.update), controller.updateUsuario);
+router.put(
+    '/:usuarioId',
+    authenticateToken,
+    authorizeSelfOrAdmin,
+    ValidateJoi(Schemas.usuario.update),
+    controller.updateUsuario
+);
 
 /**
  * @openapi
  * /usuarios/{usuarioId}:
  *   delete:
- *     summary: Elimina un usuario por ID
+ *     summary: Elimina un usuario por ID (self o admin)
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
@@ -163,9 +200,11 @@ router.put('/:usuarioId',authenticateToken, ValidateJoi(Schemas.usuario.update),
  *     responses:
  *       200:
  *         description: OK
+ *       403:
+ *         description: No autorizado
  *       404:
  *         description: No encontrado
  */
-router.delete('/:usuarioId',authenticateToken, controller.deleteUsuario);
+router.delete('/:usuarioId', authenticateToken, authorizeSelfOrAdmin, controller.deleteUsuario);
 
 export default router;

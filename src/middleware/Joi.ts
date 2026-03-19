@@ -30,19 +30,20 @@ export const Schemas = {
     usuario: {
         create: Joi.object<IUsuario>({
             organizacion: Joi.string()
-                .regex(/^[0-9a-fA-F]{24}$/)
+                .pattern(/^[0-9a-fA-F]{24}$/)
                 .required(),
             name: Joi.string().required(),
             email: Joi.string().email().required(),
             password: Joi.string().min(6).required()
         }),
-        update: Joi.object<IUsuario>({
+        update: Joi.object({
             organizacion: Joi.string()
-                .regex(/^[0-9a-fA-F]{24}$/)
-                .required(),
-            name: Joi.string().required(),
-            email: Joi.string().email().required(),
-            password: Joi.string().min(6).required()
-        })
+                .pattern(/^[0-9a-fA-F]{24}$/)
+                .optional(),
+            name: Joi.string().optional(),
+            email: Joi.string().email().optional(),
+            password: Joi.string().min(6).optional(),
+            rol: Joi.string().valid('admin', 'user').optional()
+        }).min(1)
     }
 };

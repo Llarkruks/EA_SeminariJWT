@@ -2,6 +2,13 @@
   <h2>Inicio</h2>
   <p>Has iniciado sesión correctamente</p>
 
+  <div *ngIf="me" style="margin: 20px 0;">
+    <h3>Información del usuario</h3>
+    <p><strong>Nombre:</strong> {{ me.name }}</p>
+    <p><strong>Email:</strong> {{ me.email }}</p>
+    <p><strong>Rol:</strong> {{ me.rol }}</p>
+  </div>
+
   <div style="margin: 20px 0;">
     <h3>Tu Token JWT</h3>
     <code style="display:block; padding:10px; background:#eee; word-break:break-all;">
@@ -10,25 +17,17 @@
   </div>
 
   <div style="margin: 20px 0;">
-    <h3>Prueba de Token: Lista de Usuarios</h3>
-    <button class="btn" (click)="cargarUsuarios()" [disabled]="loadingUsuarios" style="margin-right: 10px;">
-      <span *ngIf="loadingUsuarios">Cargando...</span>
-      <span *ngIf="!loadingUsuarios">Cargar Lista de Usuarios</span>
-    </button>
-    <button class="btn" (click)="refreshToken()">
+    <button class="btn" (click)="refreshToken()" style="margin-right: 10px;">
       Refrescar Token
     </button>
 
-    <div *ngIf="errorUsuarios" class="alert" style="margin-top: 10px;">
-      {{ errorUsuarios }}
-    </div>
+    <a *ngIf="esAdmin()" routerLink="/admin-resource" class="btn" style="text-decoration: none;">
+      Ir al recurso de admin
+    </a>
+  </div>
 
-    <ul *ngIf="usuarios.length > 0" class="list" style="margin-top: 15px;">
-      <li *ngFor="let u of usuarios" class="card" style="flex-direction: row; justify-content: start; gap:10px;">
-        <span class="name">{{ u.name }}</span>
-        <span class="muted">{{ u.email }}</span>
-      </li>
-    </ul>
+  <div *ngIf="!esAdmin()" class="alert" style="margin-top: 10px;">
+    Tu usuario no es admin, así que no verás el acceso al recurso protegido.
   </div>
 
   <button class="btn" (click)="logout()">

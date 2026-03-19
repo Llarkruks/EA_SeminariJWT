@@ -15,6 +15,8 @@ export interface LoginPayload {
   password: string;
 }
 
+export type UserRole = 'admin' | 'user';
+
 export interface LoginResponse {
   message: string;
   accessToken: string;
@@ -23,6 +25,7 @@ export interface LoginResponse {
     name: string;
     email: string;
     organizacion: string;
+    rol: UserRole;
   };
 }
 
@@ -31,6 +34,20 @@ export interface Usuario {
   name: string;
   email: string;
   organizacion: any;
+  rol: UserRole;
+}
+
+export interface Organizacion {
+  _id: string;
+  name: string;
+}
+
+export interface MeResponse {
+  _id: string;
+  name: string;
+  email: string;
+  organizacion: any;
+  rol: UserRole;
 }
 
 const TOKEN_KEY = 'jwt_token';
@@ -40,13 +57,10 @@ const API_URL = 'http://localhost:1337';
   providedIn: 'root'
 })
 export class AuthService {
+  private currentUser: MeResponse | null = null;
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  /**
-   * Registra un nuevo usuario. NO genera token.
-   * Si tiene éxito, redirige a /login.
-   */
   register(payload: RegisterPayload): Observable<any> {
     return this.http.post(`${API_URL}/usuarios`, payload).pipe(
       tap(() => {
@@ -55,9 +69,6 @@ export class AuthService {
     );
   }
 
-  /**
-   * Refresca el token actual.
-   */
   refreshToken(): Observable<{ accessToken: string }> {
     return this.http.post<{ accessToken: string }>(`${API_URL}/auth/refresh`, {}, { withCredentials: true }).pipe(
       tap((res) => {
@@ -66,51 +77,65 @@ export class AuthService {
     );
   }
 
-  /**
-   * Inicia sesión. Si tiene éxito, guarda el token y redirige a /home.
-   */
   login(payload: LoginPayload): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${API_URL}/auth/login`, payload, { withCredentials: true }).pipe(
       tap((res) => {
         this.saveToken(res.accessToken);
+        this.currentUser = {
+          _id: res.usuario._id,
+          name: res.usuario.name,
+          email: res.usuario.email,
+          organizacion: res.usuario.organizacion,
+          rol: res.usuario.rol
+        };
         this.router.navigate(['/home']);
       })
     );
   }
 
-  /** Guarda el token en localStorage */
   saveToken(token: string): void {
     localStorage.setItem(TOKEN_KEY, token);
   }
 
-  /**
-   * Petición protegida para probar el token (devuelve todos los usuarios).
-   */
   getUsuarios(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(`${API_URL}/usuarios`);
   }
 
-  /** Obtiene el token del localStorage */
+  createOrganizacion(payload: { name: string }): Observable<Organizacion> {
+    return this.http.post<Organizacion>(`${API_URL}/organizaciones`, payload);
+  }
+
+  getMe(): Observable<MeResponse> {
+    return this.http.get<MeResponse>(`${API_URL}/auth/me`).pipe(
+      tap((user) => {
+        this.currentUser = user;
+      })
+    );
+  }
+
   getToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
   }
 
-  /** Comprueba si el usuario está autenticado */
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
-  /** Cierra sesión eliminando el token */
+  getCurrentUser(): MeResponse | null {
+    return this.currentUser;
+  }
+
+  isAdmin(): boolean {
+    return this.currentUser?.rol === 'admin';
+  }
+
   logout(): void {
     this.http.post(`${API_URL}/auth/logout`, {}, { withCredentials: true }).subscribe({
-      next: () => {
-        // noop
-      },
-      error: () => {
-        // noop
-      }
+      next: () => {},
+      error: () => {}
     });
 
+    this.currentUser = null;
     localStorage.removeItem(TOKEN_KEY);
     this.router.navigate(['/login']);
   }
