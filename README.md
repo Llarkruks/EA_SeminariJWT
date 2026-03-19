@@ -1,4 +1,16 @@
-<<<<<<< HEAD
+### Documentació
+
+**Referències**
+- Apunts i explicacions del professor a classe.
+- Presentació dels companys sobre el seminari
+
+**Ús de la IA generativa**  
+S’ha utilitzat ChatGPT com a suport durant el desenvolupament de l’exercici, especialment en els següents aspectes:
+- La implementació del sistema de control d’accés basat en rols (RBAC) amb JWT, incloent la modificació del payload per incorporar el camp rol i la seva validació al backend.
+- La protecció de rutes crítiques al backend (com la gestió d’usuaris i organitzacions), assegurant que només els usuaris amb rol admin puguin accedir-hi.
+- La resolució d’errors durant el desenvolupament, especialment relacionats amb la validació de dades (Joi), l’ús correcte del token JWT en les peticions HTTP i la gestió de l’autenticació amb interceptors.
+
+
 # Seminario 7 EA — JWT (Arquitectura Profesional)
 
 ¡Bienvenido al **Seminario 7 de Entornos de Aplicaciones (EA)**! Este proyecto demuestra una implementación avanzada y segura de autenticación mediante **JWT (JSON Web Tokens)** utilizando una arquitectura de **Access y Refresh Tokens**, ahora refactorizada siguiendo principios de diseño profesional (Separación de responsabilidades y Configuración Centralizada).
