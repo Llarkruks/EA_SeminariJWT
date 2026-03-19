@@ -4,8 +4,10 @@ import Organizacion, { IOrganizacionModel, IOrganizacion } from '../models/Organ
 const createOrganizacion = async (data: Partial<IOrganizacion>): Promise<IOrganizacionModel> => {
     const organizacion = new Organizacion({
         _id: new mongoose.Types.ObjectId(),
-        ...data
+        ...data,
+        usuarios: data.usuarios ?? []
     });
+
     return await organizacion.save();
 };
 
@@ -17,12 +19,17 @@ const getAllOrganizaciones = async (): Promise<IOrganizacionModel[]> => {
     return await Organizacion.find();
 };
 
-const updateOrganizacion = async (organizacionId: string, data: Partial<IOrganizacion>): Promise<IOrganizacionModel | null> => {
+const updateOrganizacion = async (
+    organizacionId: string,
+    data: Partial<IOrganizacion>
+): Promise<IOrganizacionModel | null> => {
     const organizacion = await Organizacion.findById(organizacionId);
+
     if (organizacion) {
         organizacion.set(data);
         return await organizacion.save();
     }
+
     return null;
 };
 
@@ -30,4 +37,15 @@ const deleteOrganizacion = async (organizacionId: string): Promise<IOrganizacion
     return await Organizacion.findByIdAndDelete(organizacionId);
 };
 
-export default { createOrganizacion, getOrganizacion, getAllOrganizaciones, updateOrganizacion, deleteOrganizacion };
+const getUsuariosByOrganizacion = async (organizacionId: string) => {
+    return await Organizacion.findById(organizacionId).populate('usuarios').lean();
+};
+
+export default {
+    createOrganizacion,
+    getOrganizacion,
+    getAllOrganizaciones,
+    updateOrganizacion,
+    deleteOrganizacion,
+    getUsuariosByOrganizacion
+};

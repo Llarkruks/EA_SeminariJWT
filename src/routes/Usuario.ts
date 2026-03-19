@@ -165,7 +165,7 @@ router.get('/', authenticateToken, authorizeRoles('admin'), controller.readAll);
  *           schema:
  *             $ref: '#/components/schemas/UsuarioUpdate'
  *     responses:
- *       201:
+ *       200:
  *         description: Actualizado
  *       403:
  *         description: No autorizado

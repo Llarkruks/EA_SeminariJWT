@@ -13,6 +13,25 @@ const router = express.Router();
  *
  * components:
  *   schemas:
+ *     Usuario:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: ObjectId de MongoDB
+ *           example: "65f1c2a1b2c3d4e5f6789012"
+ *         name:
+ *           type: string
+ *           example: "Juan Pérez"
+ *         email:
+ *           type: string
+ *           example: "juan@email.com"
+ *         password:
+ *           type: string
+ *           example: "123456"
+ *         organizacion:
+ *           type: string
+ *           example: "65f1c2a1b2c3d4e5f6789013"
  *     Organizacion:
  *       type: object
  *       properties:
@@ -37,6 +56,11 @@ const router = express.Router();
  *         name:
  *           type: string
  *           example: "EA Company"
+ *         usuarios:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["65f1c2a1b2c3d4e5f6789012"]
  */
 
 /**
@@ -68,6 +92,33 @@ router.post(
     ValidateJoi(Schemas.organizacion.create),
     controller.createOrganizacion
 );
+
+/**
+ * @openapi
+ * /organizaciones/{organizacionId}/usuarios:
+ *   get:
+ *     summary: Obtiene los usuarios de una organización
+ *     tags: [Organizaciones]
+ *     parameters:
+ *       - in: path
+ *         name: organizacionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ObjectId de la organización
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios de la organización
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Usuario'
+ *       404:
+ *         description: No encontrado
+ */
+router.get('/:organizacionId/usuarios', controller.readUsuariosByOrganizacion);
 
 /**
  * @openapi
